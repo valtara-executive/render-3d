@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valtara - Quirófano Biomecánico</title>
+    <style>
+        /* CSS Básico para el Cuarto Oscuro */
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #050508; 
+            color: #D4AF37; 
+            font-family: 'Courier New', Courier, monospace; 
+            touch-action: none; /* Evita que la pantalla rebote en celulares */
+        }
+        
+        /* Interfaz de Usuario (HUD) Flotante */
+        #ui-layer { 
+            position: absolute; 
+            top: 30px; 
+            left: 30px; 
+            z-index: 10; 
+            pointer-events: none; 
+            background: rgba(5,5,8,0.7);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 3px solid #00ffff;
+            box-shadow: 0 10px 30px rgba(0,255,255,0.1);
+        }
+        h1 { margin: 0; font-size: 1.2rem; letter-spacing: 3px; text-transform: uppercase; color: #fff; }
+        p { color: #888; font-size: 0.8rem; margin: 8px 0 0 0; letter-spacing: 1px; }
+        
+        /* Texto de Carga Central */
+        #loader { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            font-size: 1.5rem; 
+            color: #D4AF37; 
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(212,175,55,0.5);
+        }
+    </style>
+
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+        }
+      }
+    </script>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <h1>Santuario Biomecánico</h1>
+        <p>Motor: WebGL Activado</p>
+        <p style="color:#D4AF37;">Rotar: Deslizar | Zoom: Pellizcar</p>
+    </div>
+    
+    <div id="loader">Iniciando Enlace Biomecánico...</div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        // 1. CREACIÓN DEL UNIVERSO (Escena y Fondo)
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050508);
+        scene.fog = new THREE.FogExp2(0x050508, 0.05); // Niebla para dar profundidad
+
+        // 2. EL OJO DEL PACIENTE (Cámara)
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 1.5, 5); 
+
+        // 3. EL MOTOR DE RENDERIZADO
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping; // Colores cinematográficos
+        renderer.toneMappingExposure = 1.2;
+        document.body.appendChild(renderer.domElement);
+
+        // 4. SISTEMA DE ILUMINACIÓN DE ESTUDIO VALTARA
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+
+        // Foco de Luz Oro (Izquierda)
+        const spotLightGold = new THREE.SpotLight(0xD4AF37, 8);
+        spotLightGold.position.set(5, 5, 2);
+        spotLightGold.angle = Math.PI / 4;
+        spotLightGold.penumbra = 0.8;
+        scene.add(spotLightGold);
+
+        // Foco de Luz Cian (Derecha)
+        const spotLightCyan = new THREE.SpotLight(0x00ffff, 5);
+        spotLightCyan.position.set(-5, 3, 5);
+        spotLightCyan.angle = Math.PI / 4;
+        spotLightCyan.penumbra = 0.8;
+        scene.add(spotLightCyan);
+
+        // Luz Trasera para resaltar la silueta
+        const backLight = new THREE.PointLight(0xffffff, 2);
+        backLight.position.set(0, 2, -5);
+        scene.add(backLight);
+
+        // 5. CONTROLES TÁCTILES (Interactividad)
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; // Efecto de inercia suave al girar
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 1; // Límite de Zoom in
+        controls.maxDistance = 10; // Límite de Zoom out
+        controls.target.set(0, 1, 0); // Apuntar al pecho del avatar
+
+        // 6. INYECCIÓN DEL ADN (Cargador del modelo .glb)
+        // Convertimos el enlace normal de GitHub a un enlace de datos puros (Raw)
+        const modelUrl = "https://raw.githubusercontent.com/valtara-executive/render-3d/main/Character%20Base.glb";
+        const loader = new GLTFLoader();
+        const loadingText = document.getElementById('loader');
+
+        loader.load(
+            modelUrl,
+            (gltf) => {
+                const model = gltf.scene;
+                
+                // Alineación del modelo
+                model.position.set(0, -1, 0); 
+                
+                // LA ALQUIMIA DE LOS MATERIALES: Revestimiento Valtara
+                const valtaraMaterial = new THREE.MeshPhysicalMaterial({
+                    color: 0x151515, // Gris oscuro casi negro
+                    metalness: 0.7,  // Apariencia metálica
+                    roughness: 0.3,  // Un poco pulido, no como espejo
+                    clearcoat: 1.0,  // Capa de barniz transparente
+                    clearcoatRoughness: 0.1,
+                });
+
+                // Le quitamos el material base a tu modelo y le ponemos el nuestro
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = valtaraMaterial;
+                    }
+                });
+
+                scene.add(model);
+                loadingText.style.display = 'none'; // Modelo cargado, quitamos el texto
+
+                // Ajuste inteligente de cámara al tamaño del modelo
+                const box = new THREE.Box3().setFromObject(model);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                
+                controls.target.copy(center);
+                camera.position.set(center.x, center.y, size.y * 1.8);
+            },
+            (xhr) => {
+                // Porcentaje de carga en tiempo real
+                const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                loadingText.innerText = `Sincronizando Malla: ${percent}%`;
+            },
+            (error) => {
+                console.error('Fallo Crítico en Matriz 3D:', error);
+                loadingText.innerText = "Error Criptográfico. Ver consola.";
+                loadingText.style.color = "#ff5555";
+            }
+        );
+
+        // 7. EL LATIDO DEL CORAZÓN (Loop de Animación Continua)
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // Fricción suave
+            
+            // Rotación dramática automática (Descomenta la línea de abajo si quieres que gire solo)
+            // scene.rotation.y += 0.002; 
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // 8. DISEÑO RESPONSIVO (Si el paciente gira el celular)
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
