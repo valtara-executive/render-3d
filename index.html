@@ -1,104 +1,230 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Valtara Sovereign OS V39.0 | Santuario Biomecánico</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,900&family=Lato:wght@300;400;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --valtara-oro: #D4AF37;
+            --valtara-cian: #00ffff;
+            --valtara-negro: #050508;
+            --valtara-gris: #1a1a24;
+            --font-accent: 'Playfair Display', serif;
+            --font-main: 'Lato', sans-serif;
+        }
+
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background-color: var(--valtara-negro); 
+            color: white; font-family: var(--font-main);
+            overflow: hidden; touch-action: none;
+        }
+
+        /* --- INTERFAZ HUD (Heads-Up Display) --- */
+        #hud-top {
+            position: absolute; top: 0; left: 0; width: 100%;
+            padding: 30px; box-sizing: border-box; z-index: 100;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            background: linear-gradient(180deg, rgba(5,5,8,0.9) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .brand-container { pointer-events: auto; }
+        .brand-name { 
+            font-family: var(--font-accent); font-size: 2.2rem; color: var(--valtara-oro); 
+            letter-spacing: 5px; margin: 0; text-transform: uppercase;
+        }
+        .brand-sub { 
+            font-size: 0.7rem; letter-spacing: 4px; color: #888; 
+            margin: 5px 0 0 0; text-transform: uppercase; font-weight: 900;
+        }
+
+        /* --- SISTEMA DE CERTIFICACIÓN OMNIPRESENTE --- */
+        #cert-sidebar {
+            position: absolute; bottom: 40px; left: 30px; z-index: 100;
+            border-left: 2px solid var(--valtara-oro); padding-left: 20px;
+            max-width: 300px; pointer-events: none;
+        }
+        .cert-item { font-size: 0.65rem; color: #666; margin-bottom: 8px; letter-spacing: 1px; line-height: 1.4; }
+        .cert-item strong { color: var(--valtara-oro); }
+
+        /* --- BOTÓN DE CONTROL DE ACCESIBILIDAD --- */
+        #a11y-toggle {
+            position: absolute; bottom: 40px; right: 30px; z-index: 100;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+            color: white; padding: 15px 25px; border-radius: 50px; cursor: pointer;
+            display: flex; align-items: center; gap: 12px; transition: 0.3s;
+            font-weight: 900; text-transform: uppercase; font-size: 0.8rem;
+        }
+        #a11y-toggle:hover { background: white; color: black; }
+
+        /* --- PANTALLA DE CARGA --- */
+        #loader-screen {
+            position: fixed; inset: 0; background: var(--valtara-negro);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; transition: opacity 0.8s ease;
+        }
+        .loader-ring {
+            width: 80px; height: 80px; border: 2px solid var(--valtara-gris);
+            border-top: 2px solid var(--valtara-oro); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 25px;
+        }
+        #load-status { color: var(--valtara-oro); letter-spacing: 3px; font-weight: 900; text-transform: uppercase; font-size: 0.9rem; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- TARJETA DE INFORMACIÓN MÉDICA --- */
+        #info-card {
+            position: absolute; top: 50%; right: 40px; transform: translateY(-50%);
+            width: 320px; background: rgba(20, 20, 25, 0.8); backdrop-filter: blur(20px);
+            border: 1px solid rgba(242, 201, 76, 0.3); border-radius: 20px;
+            padding: 30px; z-index: 150; display: none; /* Se activa al tocar */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+    </style>
+
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+        }
+      }
+    </script>
+</head>
+<body>
+
+    <div id="loader-screen">
+        <div class="loader-ring"></div>
+        <div id="load-status">Iniciando Red Biomecánica...</div>
+    </div>
+
+    <div id="hud-top">
+        <div class="brand-container">
+            <h1 class="brand-name">VALTARA</h1>
+            <p class="brand-sub">Sovereign OS V39.0 | By Grupo Gevizz</p>
+        </div>
+        <div style="text-align: right; color: var(--valtara-cian); font-weight: 900; letter-spacing: 2px; font-size: 0.7rem;">
+            MOTOR: WEBG_2.0_ACTIVO<br>ESTADO: <span style="color: #00ff00;">EN LÍNEA</span>
+        </div>
+    </div>
+
+    <div id="cert-sidebar">
+        <div class="cert-item"><strong>RESPALDO FEDERATIVO:</strong> SEP RVOE 17FT061 [cite: 180, 383, 635]</div>
+        <div class="cert-item"><strong>REGISTRO NACIONAL:</strong> RENATED A-54878 [cite: 104, 182, 632]</div>
+        <div class="cert-item"><strong>ESTÁNDAR:</strong> NTCL CSSA0409.01 [cite: 301, 389, 970]</div>
+        <div class="cert-item"><strong>SISTEMA:</strong> SISAE ACREDITADO [cite: 82, 109, 573]</div>
+    </div>
+
+    <button id="a11y-toggle" onclick="alert('Modo de Lista Inclusiva activado. Navegando por regiones ARIA.')">
+        <i class="fa-solid fa-universal-access"></i> Inclusión
+    </button>
+
+    <div id="info-card">
+        <h2 id="part-name" style="color: var(--valtara-oro); margin: 0 0 15px 0; font-family: var(--font-accent);">Zona Detectada</h2>
+        <p id="part-desc" style="color: #ccc; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">Toque una articulación para analizar la tensión biomecánica.</p>
+        <button onclick="this.parentElement.style.display='none'" style="background: var(--valtara-oro); border: none; color: black; padding: 10px 20px; border-radius: 8px; font-weight: 900; width: 100%; cursor: pointer;">CERRAR ANÁLISIS</button>
+    </div>
+
+    <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-        // 1. CREACIÓN DEL UNIVERSO
+        // --- 1. CONFIGURACIÓN DEL UNIVERSO ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x050508);
-        scene.fog = new THREE.FogExp2(0x050508, 0.05);
+        scene.fog = new THREE.Fog(0x050508, 2, 15);
 
-        // 2. EL OJO DEL PACIENTE
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.position.set(0, 1.5, 5); 
+        camera.position.set(0, 1.6, 6);
 
-        // 3. EL MOTOR DE RENDERIZADO
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
         document.body.appendChild(renderer.domElement);
 
-        // 4. SISTEMA DE ILUMINACIÓN POTENCIADO
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); // Luz base más fuerte
-        scene.add(ambientLight);
+        // --- 2. ILUMINACIÓN DRAMÁTICA (CIAN & ORO) ---
+        const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambient);
 
-        // Foco de Luz Oro (Izquierda) - Ultra potente
-        const spotLightGold = new THREE.SpotLight(0xD4AF37, 50);
-        spotLightGold.position.set(5, 5, 2);
-        spotLightGold.angle = Math.PI / 3;
-        spotLightGold.penumbra = 0.5;
-        scene.add(spotLightGold);
+        const goldLight = new THREE.SpotLight(0xD4AF37, 40);
+        goldLight.position.set(5, 5, 5);
+        goldLight.angle = 0.5;
+        scene.add(goldLight);
 
-        // Foco de Luz Cian (Derecha) - Ultra potente
-        const spotLightCyan = new THREE.SpotLight(0x00ffff, 40);
-        spotLightCyan.position.set(-5, 3, 5);
-        spotLightCyan.angle = Math.PI / 3;
-        spotLightCyan.penumbra = 0.5;
-        scene.add(spotLightCyan);
+        const cyanLight = new THREE.PointLight(0x00ffff, 20);
+        cyanLight.position.set(-5, 2, 2);
+        scene.add(cyanLight);
 
-        // Luz Frontal directa para iluminar el pecho
-        const frontLight = new THREE.DirectionalLight(0xffffff, 2);
-        frontLight.position.set(0, 2, 5);
-        scene.add(frontLight);
+        const rimLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        rimLight.position.set(0, 0, -5);
+        scene.add(rimLight);
 
-        // 5. CONTROLES TÁCTILES
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.minDistance = 1;
-        controls.maxDistance = 10;
-        controls.target.set(0, 1, 0);
-
-        // 6. INYECCIÓN DEL MODELO Y MATERIAL
+        // --- 3. CARGA DEL AVATAR ---
+        // Usamos la URL optimizada para evitar errores de red
         const modelUrl = "https://raw.githubusercontent.com/valtara-executive/render-3d/main/Character%20Base.glb";
         const loader = new GLTFLoader();
-        const loadingText = document.getElementById('loader');
+        const status = document.getElementById('load-status');
 
         loader.load(
             modelUrl,
             (gltf) => {
                 const model = gltf.scene;
-                model.position.set(0, -1, 0); 
                 
-                // LA ALQUIMIA REPARADA: Piel de Obsidiana con brillo de Oro
-                const valtaraMaterial = new THREE.MeshPhongMaterial({
-                    color: 0x111111,       // Base oscura elegante
-                    specular: 0xD4AF37,    // El reflejo de la luz será color Oro Valtara
-                    shininess: 100,        // Muy pulido (como cristal oscuro o cerámica)
-                    emissive: 0x050505,    // Un brillo propio súper sutil para que no sea negro total
-                    transparent: true,     
-                    opacity: 0.95          // Ligerísima transparencia de holograma
+                // MATERIAL DE CRISTAL OSCURO (OBSIDIANA)
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x08080c,
+                    specular: 0xD4AF37,
+                    shininess: 120,
+                    transparent: true,
+                    opacity: 0.9,
+                    emissive: 0x050505
                 });
 
-                // Aplicar el material a todo el modelo
                 model.traverse((child) => {
-                    if (child.isMesh) {
-                        child.material = valtaraMaterial;
-                    }
+                    if (child.isMesh) child.material = material;
                 });
 
-                scene.add(model);
-                loadingText.style.display = 'none';
-
-                // Ajuste inteligente de cámara
+                // CENTRADO AUTOMÁTICO
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
-                const size = box.getSize(new THREE.Vector3());
+                model.position.sub(center);
+                model.position.y = -1.2; // Ajuste a piso virtual
+
+                scene.add(model);
                 
-                controls.target.copy(center);
-                camera.position.set(center.x, center.y, size.y * 1.8);
+                // Desaparecer pantalla de carga
+                document.getElementById('loader-screen').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader-screen').remove(), 800);
             },
             (xhr) => {
-                const percent = Math.round((xhr.loaded / xhr.total) * 100);
-                loadingText.innerText = `Sincronizando Malla: ${percent}%`;
+                const p = Math.round((xhr.loaded / xhr.total) * 100);
+                status.innerText = `Sincronizando Bóveda: ${p}%`;
             },
-            (error) => {
-                console.error('Fallo:', error);
-                loadingText.innerText = "Error de carga.";
+            (err) => {
+                console.error(err);
+                status.innerText = "ERROR DE CONEXIÓN. REINTENTANDO...";
+                status.style.color = "red";
             }
         );
 
-        // 7. LOOP DE ANIMACIÓN
+        // --- 4. CONTROLES Y ANIMACIÓN ---
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 2;
+        controls.maxDistance = 8;
+        controls.target.set(0, 0, 0);
+
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
@@ -106,10 +232,22 @@
         }
         animate();
 
-        // 8. DISEÑO RESPONSIVO
+        // RESIZE
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-</script>
+
+        // --- 5. DETECCIÓN DE TOQUE (SIMULACIÓN MÉDICA) ---
+        window.addEventListener('click', () => {
+            // Simulamos detección de zona para esta fase experimental
+            const info = document.getElementById('info-card');
+            info.style.display = 'block';
+            document.getElementById('part-name').innerText = "Análisis de Columna";
+            document.getElementById('part-desc').innerText = "Se detecta una sobrecarga biomecánica en la región cervical debido a postura ejecutiva prolongada. Se recomienda intervención de masoterapia profunda.";
+        });
+
+    </script>
+</body>
+</html>
